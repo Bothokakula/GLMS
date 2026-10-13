@@ -1,0 +1,53 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## NuGet
+*.nupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Visual Studio
+.vs/
+*.rsuser
+*.csproj.user
+
+## Rider
+.idea/
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+## OS
+.DS_Store
+Thumbs.db
+
+## User-specific
+*.swp
+*.swo
+*~
+
+## Uploads
+uploads/*
+!uploads/.gitkeep
+
+## Cursor
+.cursor/
+
+## Secrets
+.env
+
+## macOS archive junk
+__MACOSX/

@@ -1,0 +1,112 @@
+@model List<ContractDto>
+@{
+    ViewData["Title"] = "Contracts";
+    var statuses = ViewBag.Statuses as List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> ?? new();
+    var currentStatus = ViewBag.CurrentStatus as ContractStatus?;
+    var currentStartDate = ViewBag.CurrentStartDate as DateTime?;
+    var currentEndDate = ViewBag.CurrentEndDate as DateTime?;
+    var currentClientName = ViewBag.CurrentClientName as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">
+        <i class="bi bi-file-earmark-text"></i> Contracts
+    </h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Create New
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form asp-action="Index" method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small text-muted">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        @foreach (var s in statuses)
+                        {
+                            <option value="@s.Value" selected="@s.Selected">@s.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold small text-muted">Start Date</label>
+                    <input type="date" name="startDate" class="form-control"
+                           value="@(currentStartDate?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold small text-muted">End Date</label>
+                    <input type="date" name="endDate" class="form-control"
+                           value="@(currentEndDate?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold small text-muted">Client Name</label>
+                    <input type="text" name="clientName" class="form-control" placeholder="Search client..."
+                           value="@currentClientName" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No contracts found matching your criteria.
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Client</th>
+                        <th>Status</th>
+                        <th>Service Level</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var contract in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@contract.Title</td>
+                            <td>@contract.ClientName</td>
+                            <td>
+                                <span class="badge status-badge-@contract.Status">@contract.Status</span>
+                            </td>
+                            <td>@contract.ServiceLevel</td>
+                            <td>@contract.StartDate.ToString("dd MMM yyyy")</td>
+                            <td>@contract.EndDate.ToString("dd MMM yyyy")</td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@contract.Id"
+                                   class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="bi bi-eye"></i> Details
+                                </a>
+                                @if (!string.IsNullOrEmpty(contract.SignedAgreementPath))
+                                {
+                                    <a asp-action="Download" asp-route-id="@contract.Id"
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

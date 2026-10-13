@@ -1,0 +1,45 @@
+services:
+  sql-server-db:
+    image: mcr.microsoft.com/azure-sql-edge
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${SA_PASSWORD:?Set SA_PASSWORD in .env}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+
+  glms-backend-api:
+    build:
+      context: .
+      dockerfile: src/GLMS.API/Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sql-server-db,1433;Database=GLMSDB;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True
+      - Jwt__Key=${JWT_KEY:?Set JWT_KEY in .env}
+      - Jwt__Issuer=GLMS.API
+      - Jwt__Audience=GLMS.Web
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - sql-server-db
+    restart: on-failure
+    volumes:
+      - uploads:/app/uploads
+
+  glms-frontend-web:
+    build:
+      context: .
+      dockerfile: src/GLMS.Web/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ApiSettings__BaseUrl=http://glms-backend-api:8080
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - glms-backend-api
+    restart: on-failure
+
+volumes:
+  sqldata:
+  uploads:

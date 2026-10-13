@@ -1,0 +1,165 @@
+@model ContractDto
+@{
+    ViewData["Title"] = $"Contract: {Model.Title}";
+    var serviceRequests = ViewBag.ServiceRequests as List<ServiceRequestDto> ?? new List<ServiceRequestDto>();
+    var status = Model.Status;
+}
+
+<div class="d-flex align-items-center mb-4">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h2 class="fw-bold mb-0">
+        <i class="bi bi-file-earmark-text"></i> @Model.Title
+    </h2>
+    <span class="badge status-badge-@status ms-3 fs-6">@status</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi bi-info-circle"></i> Contract Details
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5 text-muted">Client</dt>
+                    <dd class="col-sm-7">
+                        <a asp-controller="Clients" asp-action="Details" asp-route-id="@Model.ClientId"
+                           class="text-decoration-none">@Model.ClientName</a>
+                    </dd>
+
+                    <dt class="col-sm-5 text-muted">Title</dt>
+                    <dd class="col-sm-7">@Model.Title</dd>
+
+                    <dt class="col-sm-5 text-muted">Start Date</dt>
+                    <dd class="col-sm-7">@Model.StartDate.ToString("dd MMM yyyy")</dd>
+
+                    <dt class="col-sm-5 text-muted">End Date</dt>
+                    <dd class="col-sm-7">@Model.EndDate.ToString("dd MMM yyyy")</dd>
+
+                    <dt class="col-sm-5 text-muted">Service Level</dt>
+                    <dd class="col-sm-7"><span class="badge bg-info text-dark">@Model.ServiceLevel</span></dd>
+
+                    <dt class="col-sm-5 text-muted">Status</dt>
+                    <dd class="col-sm-7"><span class="badge status-badge-@status">@status</span></dd>
+
+                    <dt class="col-sm-5 text-muted">Agreement</dt>
+                    <dd class="col-sm-7">
+                        @if (!string.IsNullOrEmpty(Model.SignedAgreementPath))
+                        {
+                            <a asp-action="Download" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-download"></i> @(Model.OriginalFileName ?? "Download")
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">No file uploaded</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi bi-arrow-repeat"></i> Change Status
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    @if (status == "Draft")
+                    {
+                        <form asp-action="UpdateStatus" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="newStatus" value="Active" />
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-check-circle"></i> Activate
+                            </button>
+                        </form>
+                    }
+                    @if (status == "Active")
+                    {
+                        <form asp-action="UpdateStatus" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="newStatus" value="Expired" />
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="bi bi-x-circle"></i> Expire
+                            </button>
+                        </form>
+                        <form asp-action="UpdateStatus" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="newStatus" value="OnHold" />
+                            <button type="submit" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pause-circle"></i> Put On Hold
+                            </button>
+                        </form>
+                    }
+                    @if (status == "OnHold")
+                    {
+                        <form asp-action="UpdateStatus" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="newStatus" value="Active" />
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-play-circle"></i> Reactivate
+                            </button>
+                        </form>
+                    }
+                    @if (status == "Expired")
+                    {
+                        <span class="text-muted fst-italic">No status transitions available.</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-semibold"><i class="bi bi-clipboard2-check"></i> Service Requests</span>
+                <a asp-controller="ServiceRequests" asp-action="Create" asp-route-contractId="@Model.Id"
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus-lg"></i> New Request
+                </a>
+            </div>
+            @if (serviceRequests.Count == 0)
+            {
+                <div class="card-body">
+                    <p class="text-muted mb-0">No service requests for this contract yet.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Description</th>
+                                <th class="text-end">Cost (USD)</th>
+                                <th class="text-end">Cost (ZAR)</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var sr in serviceRequests)
+                            {
+                                <tr>
+                                    <td>@sr.Description</td>
+                                    <td class="text-end">$@sr.CostUSD.ToString("N2")</td>
+                                    <td class="text-end">R @sr.CostZAR.ToString("N2")</td>
+                                    <td><span class="badge bg-info text-dark">@sr.Status</span></td>
+                                    <td>@sr.CreatedDate.ToString("dd MMM yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

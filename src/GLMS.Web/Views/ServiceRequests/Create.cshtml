@@ -1,0 +1,95 @@
+@model CreateServiceRequestRequest
+@{
+    ViewData["Title"] = "Create Service Request";
+    var contractId = ViewBag.ContractId as int? ?? Model?.ContractId ?? 0;
+    var exchangeRate = ViewBag.ExchangeRate as decimal? ?? 18.0m;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="d-flex align-items-center mb-4">
+            <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contractId"
+               class="btn btn-outline-secondary btn-sm me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h2 class="fw-bold mb-0">
+                <i class="bi bi-clipboard2-plus"></i> New Service Request
+            </h2>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <input asp-for="ContractId" type="hidden" value="@contractId" />
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-semibold">
+                            Description <span class="text-danger">*</span>
+                        </label>
+                        <textarea asp-for="Description" class="form-control" rows="4"
+                                  placeholder="Describe the service request..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="CostUSD" class="form-label fw-semibold">
+                            Cost (USD) <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="CostUSD" type="number" step="0.01" min="0" class="form-control"
+                                   id="costUsd" placeholder="0.00" />
+                        </div>
+                        <span asp-validation-for="CostUSD" class="text-danger small"></span>
+                    </div>
+
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Exchange Rate (USD &rarr; ZAR)</small>
+                                    <span class="fs-5 fw-bold text-primary" id="rateDisplay">@exchangeRate</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Estimated Cost (ZAR)</small>
+                                    <span class="fs-5 fw-bold text-success" id="costZarDisplay">R 0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Submit Request
+                        </button>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contractId"
+                           class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var rate = parseFloat('@exchangeRate');
+            var costInput = document.getElementById('costUsd');
+            var zarDisplay = document.getElementById('costZarDisplay');
+
+            function updateZar() {
+                var usd = parseFloat(costInput.value) || 0;
+                var zar = (usd * rate).toFixed(2);
+                zarDisplay.textContent = 'R ' + zar;
+            }
+
+            costInput.addEventListener('input', updateZar);
+            updateZar();
+        })();
+    </script>
+}

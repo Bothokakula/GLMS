@@ -1,0 +1,59 @@
+@model List<ServiceRequestDto>
+@{
+    ViewData["Title"] = "Service Requests";
+    var contractId = ViewBag.ContractId as int? ?? 0;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contractId"
+           class="btn btn-outline-secondary btn-sm me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-clipboard2-check"></i> Service Requests
+        </h2>
+    </div>
+    <a asp-action="Create" asp-route-contractId="@contractId" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> New Request
+    </a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No service requests found for this contract.
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Description</th>
+                        <th class="text-end">Cost (USD)</th>
+                        <th class="text-end">Cost (ZAR)</th>
+                        <th class="text-end">Rate</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sr in Model)
+                    {
+                        <tr>
+                            <td>@sr.Description</td>
+                            <td class="text-end">$@sr.CostUSD.ToString("N2")</td>
+                            <td class="text-end">R @sr.CostZAR.ToString("N2")</td>
+                            <td class="text-end">@sr.ExchangeRate.ToString("N4")</td>
+                            <td><span class="badge bg-info text-dark">@sr.Status</span></td>
+                            <td>@sr.CreatedDate.ToString("dd MMM yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
